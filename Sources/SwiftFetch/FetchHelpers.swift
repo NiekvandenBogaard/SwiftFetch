@@ -15,7 +15,7 @@ import Foundation
 ///   - query: The request query parameters.
 ///   - body: The request body.
 ///   - headers: The request headers.
-func fetch(_ request: URLRequest, method: FetchMethod = .get, query: [String: String?]? = nil, body: FetchRequestBody? = nil, headers: [String: String]? = nil) -> FetchTask {
+open func fetch(_ request: URLRequest, method: FetchMethod = .get, query: [String: String?]? = nil, body: FetchRequestBody? = nil, headers: [String: String]? = nil) -> FetchTask {
     
     return Fetch.default.request(request, method: method, query: query, body: body, headers: headers)
 }
@@ -28,7 +28,7 @@ func fetch(_ request: URLRequest, method: FetchMethod = .get, query: [String: St
 ///   - query: The request query parameters.
 ///   - body: The request body.
 ///   - headers: The request headers.
-func fetch(_ url: URL, method: FetchMethod = .get, query: [String: String?]? = nil, body: FetchRequestBody? = nil, headers: [String: String]? = nil) -> FetchTask {
+open func fetch(_ url: URL, method: FetchMethod = .get, query: [String: String?]? = nil, body: FetchRequestBody? = nil, headers: [String: String]? = nil) -> FetchTask {
     
     return Fetch.default.request(url, method: method, query: query, body: body, headers: headers)
 }
