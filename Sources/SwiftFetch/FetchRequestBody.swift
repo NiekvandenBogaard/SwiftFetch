@@ -19,8 +19,8 @@ open class FetchRequestBody {
         adapt = adapter
     }
     
-    // MARK: Encoders
-    
+    /// Raw data request body.
+    /// - Parameter data: The data for the request body.
     public static func data(_ data: Data) -> FetchRequestBody {
         
         return FetchRequestBody { urlRequest in
@@ -31,6 +31,10 @@ open class FetchRequestBody {
         }
     }
     
+    /// Text request body.
+    /// - Parameters:
+    ///   - text: The string for the request body.
+    ///   - encoding: Encoding to use.
     public static func text(_ text: String, encoding: String.Encoding = .utf8) -> FetchRequestBody {
         
         return FetchRequestBody { urlRequest in
@@ -43,6 +47,10 @@ open class FetchRequestBody {
         }
     }
     
+    /// Json request body. Using encodable instance.
+    /// - Parameters:
+    ///   - value: Encodable instance.
+    ///   - encoder: Encoder to use.
     public static func json<T: Encodable>(_ value: T, encoder: JSONEncoder = JSONEncoder()) -> FetchRequestBody {
         
         return FetchRequestBody { urlRequest in
@@ -51,12 +59,19 @@ open class FetchRequestBody {
 
             var urlRequest = urlRequest
             urlRequest.httpBody = data
-            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            // Set Content-Type header without overriding existing header.
+            if nil == urlRequest.value(forHTTPHeaderField: "Content-Type") {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
+            
             return urlRequest
         }
     }
     
-    public static func json(_ value: [String: Any], encoder: JSONEncoder = JSONEncoder()) -> FetchRequestBody {
+    /// Json request body. Using dictionary.
+    /// - Parameter value: Dictionary with key/value pairs.
+    public static func json(_ value: [String: Any]) -> FetchRequestBody {
         
         return FetchRequestBody { urlRequest in
             
@@ -64,11 +79,20 @@ open class FetchRequestBody {
             
             var urlRequest = urlRequest
             urlRequest.httpBody = data
-            urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            // Set Content-Type header without overriding existing header.
+            if nil == urlRequest.value(forHTTPHeaderField: "Content-Type") {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
+            
             return urlRequest
         }
     }
     
+    /// Urlencoded request body. Using dictionary. Recommended.
+    /// - Parameters:
+    ///   - values: Dictionary with key/value pairs.
+    ///   - encoding: Encoding to use.
     public static func urlEncoded(_ values: [String: String?], encoding: String.Encoding = .utf8) -> FetchRequestBody {
         
         return FetchRequestBody { urlRequest in
@@ -84,23 +108,13 @@ open class FetchRequestBody {
             
             var urlRequest = urlRequest
             urlRequest.httpBody = data
-            urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            return urlRequest
-        }
-    }
-    
-    public static func urlEncoded<T: Encodable>(_ value: T, encoding: String.Encoding = .utf8, encoder: JSONEncoder = JSONEncoder()) -> FetchRequestBody {
-        
-        return FetchRequestBody { urlRequest in
             
-            let data = try encoder.encode(value)
-            let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-            
-            guard let values = json as? [String: String?] else {
-                return urlRequest
+            // Set Content-Type header without overriding existing header.
+            if nil == urlRequest.value(forHTTPHeaderField: "Content-Type") {
+                urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             }
             
-            return try urlEncoded(values, encoding: encoding).adapt(urlRequest)
+            return urlRequest
         }
     }
 }

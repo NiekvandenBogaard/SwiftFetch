@@ -21,7 +21,8 @@ open class FetchResponseBody<T> {
         decode = decoder
         adapt = adapter
     }
-    
+
+    /// Raw data response body.
     public static func data() -> FetchResponseBody<Data> {
         
         return FetchResponseBody<Data>(decoder: { _, data in
@@ -30,18 +31,21 @@ open class FetchResponseBody<T> {
         })
     }
     
+    /// Text response body.
+    /// - Parameter encoding: Encoding to use.
     public static func text(encoding: String.Encoding = .utf8) -> FetchResponseBody<String> {
         
         return FetchResponseBody<String>(decoder: { _, data in
             
-            guard let string = String(data: data, encoding: encoding) else {
-                throw NSError()
-            }
-            
-            return string
+            return String(data: data, encoding: encoding) ?? ""
         })
     }
     
+    
+    /// Json response body.
+    /// - Parameters:
+    ///   - type: Indicated type to decoded.
+    ///   - decoder: Decoder to use.
     public static func json<T: Decodable>(_ type: T.Type, decoder: JSONDecoder = JSONDecoder()) -> FetchResponseBody<T> {
         
         return FetchResponseBody<T>(decoder: { _, data in
@@ -51,11 +55,17 @@ open class FetchResponseBody<T> {
         }, adapter: { urlRequest in
             
             var urlRequest = urlRequest
-            urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+            
+            // Set Accept header without overriding existing header.
+            if nil == urlRequest.value(forHTTPHeaderField: "Accept") {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+            }
+            
             return urlRequest
         })
     }
-    
+
+    /// Json response body.
     public static func json() -> FetchResponseBody<[String: Any]> {
         
         return FetchResponseBody<[String: Any]>(decoder: { _, data in
@@ -65,11 +75,18 @@ open class FetchResponseBody<T> {
         }, adapter: { urlRequest in
             
             var urlRequest = urlRequest
-            urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+            
+            // Set Accept header without overriding existing header.
+            if nil == urlRequest.value(forHTTPHeaderField: "Accept") {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+            }
+            
             return urlRequest
         })
     }
     
+    /// Urlencoded body.
+    /// - Parameter encoding: Encoding to use.
     public static func urlEncoded(encoding: String.Encoding = .utf8) -> FetchResponseBody<[String: String?]?> {
         
         return FetchResponseBody<[String: String?]?>(decoder: { request, data in
@@ -86,23 +103,13 @@ open class FetchResponseBody<T> {
         }, adapter: { urlRequest in
             
             var urlRequest = urlRequest
-            urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Accept")
+            
+            // Set Accept header without overriding existing header.
+            if nil == urlRequest.value(forHTTPHeaderField: "Accept") {
+                urlRequest.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Accept")
+            }
+            
             return urlRequest
         })
-    }
-    
-    public static func urlEncoded<T: Decodable>(_ type: T.Type, encoding: String.Encoding = .utf8, decoder: JSONDecoder = JSONDecoder()) -> FetchResponseBody<T> {
-        
-        let urlDecoder = urlEncoded(encoding: encoding)
-        
-        return FetchResponseBody<T>(decoder: { response, data in
-            
-            let values = try urlDecoder.decode(response, data)
-            
-            let data = try JSONSerialization.data(withJSONObject: values ?? [:])
-            
-            return try json(T.self, decoder: decoder).decode(response, data)
-            
-        }, adapter: urlDecoder.adapt)
     }
 }

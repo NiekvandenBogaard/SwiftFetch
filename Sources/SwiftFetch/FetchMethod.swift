@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// The available fetch methods.
 public enum FetchMethod: String {
     
     case options = "OPTIONS"
